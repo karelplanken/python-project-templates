@@ -1,0 +1,17 @@
+"""Example script — rename/duplicate this per script, see README.md.
+
+Runtime deps specific to one script: `uv add <package>` like any other dep
+(this template uses one shared pyproject.toml across all scripts, not
+per-script isolation — see README.md for the PEP 723 alternative).
+"""
+
+from shared.helpers import greet
+
+
+def main() -> None:
+    """Run the example script."""
+    print(greet('{{ project_name }}'))
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,43 @@
+_subdirectory: template
+
+# .gitkeep files exist only so this repo's own git tracks otherwise-empty
+# dirs — not something a generated project should see.
+_exclude:
+  - "tests/unit/.gitkeep"
+  - "tests/integration/.gitkeep"
+  - "static/.gitkeep"
+
+project_name:
+  type: str
+  help: Human-readable project name (e.g. "Excel Validators")
+
+project_slug:
+  type: str
+  help: Import / package name (snake_case)
+  default: "{{ project_name.lower().replace('-', '_').replace(' ', '_') }}"
+
+project_description:
+  type: str
+  help: One-line description
+  default: ""
+
+python_version:
+  type: str
+  help: "Python version, major.minor only (e.g. 3.14) — check with `uv python list --managed-python --no-python-downloads`"
+  default: "3.14"
+
+author_name:
+  type: str
+
+author_email:
+  type: str
+
+gitleaks_version:
+  type: str
+  help: "gitleaks version — pins both the prek hook rev and the README install snippet"
+  default: "8.30.1"
+
+license_year:
+  type: str
+  help: "Copyright year for LICENSE"
+  default: "2026"

@@ -1,0 +1,8 @@
+"""Demonstrates testing shared/ helpers directly, independent of any script."""
+
+from shared.helpers import greet
+
+
+def test_greet() -> None:
+    """greet() returns a friendly greeting."""
+    assert greet('World') == 'Hello, World!'

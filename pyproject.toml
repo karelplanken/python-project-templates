@@ -1,0 +1,111 @@
+# Project metadata --------------------------------------------------------------------
+# Not a generated project — this is the templates repo's own meta-tooling
+# (check_shared_drift.py) held to the same strictness as everything it generates.
+[project]
+name = "python-project-templates"
+version = "0.1.0"
+description = "Personal collection of Copier templates for scaffolding Python projects."
+requires-python = ">=3.14"
+readme = "README.md"
+authors = [{ name = "Karel Planken", email = "kplanken@gmail.com" }]
+dependencies = []
+
+# Dev dependencies --------------------------------------------------------------------
+# gitleaks is a standalone Go binary — install it separately, see README.
+[dependency-groups]
+dev = [
+    "codespell",
+    "complexipy",
+    "prek",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "mypy",
+]
+
+# Flat repo, nothing to build/install as a package.
+[tool.uv]
+package = false
+
+# Ruff (lint + format) — ported 1:1 from the per-shape templates ----------------------
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    # Copier-rendered/example content, not this repo's own source.
+    "*/template",
+]
+line-length = 88
+indent-width = 4
+target-version = "py314"
+
+[tool.ruff.lint]
+preview = true
+select = ["ANN", "C901", "D", "DOC", "E4", "E501", "E7", "E9", "EM101", "EM102", "EM103", "F", "I", "UP"]
+# D417: don't require documentation for every function parameter
+ignore = ["D417"]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.pydocstyle]
+# Also silently disables rules that conflict with "google" (e.g. D413).
+convention = "google"
+
+[tool.ruff.lint.isort]
+case-sensitive = true
+
+[tool.ruff.format]
+preview = true
+quote-style = "single"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+# mypy (type checking) -----------------------------------------------------------------
+[tool.mypy]
+strict = true
+exclude = "^[^/]+/template/"
+
+# complexipy (cognitive complexity) ----------------------------------------------------
+[tool.complexipy]
+max-complexity-allowed = 15
+
+# codespell -----------------------------------------------------------------------------
+[tool.codespell]
+skip = "*.lock,.venv"
+
+# pytest / coverage -------------------------------------------------------------------
+# No src/-layout package here — check_shared_drift.py sits at the repo root.
+# pythonpath puts the repo root on sys.path so tests/ can `import
+# check_shared_drift` without an __init__.py-driven rootdir climb.
+[tool.pytest.ini_options]
+testpaths = ["tests/"]
+pythonpath = ["."]
+addopts = "--cov=check_shared_drift --cov-report=term-missing --cov-fail-under=80"

@@ -1,0 +1,104 @@
+# {{ project_name }}
+
+{{ project_description }}
+
+## Layout
+
+`api/` (transport, route handlers) vs `services/` (business logic) vs
+`models/` (data shape — ORM/pydantic) keeps route handlers thin and logic
+testable without spinning up the framework. `tests/unit/` exercises
+`services/`/`models/` directly; `tests/integration/` exercises the app
+through its framework (test client, running server, etc.).
+
+## Setup
+
+```
+just install
+```
+
+`codespell` and `prek` install via `just install`. `gitleaks` is a
+standalone binary, install separately, pinned to match `prek.toml`:
+
+```bash
+GITLEAKS_VERSION={{ gitleaks_version }}
+curl -sSL -o gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+tar xzf gitleaks.tar.gz gitleaks
+sudo mv gitleaks /usr/local/bin/
+rm gitleaks.tar.gz
+gitleaks version
+```
+
+If you use VS Code, install the Python extension alongside the Ruff extension — otherwise Ruff-in-editor can silently fall back to a PATH/bundled binary instead of the `uv.lock`-pinned one in your venv.
+
+## Framework
+
+This template is framework-agnostic — no web framework is pre-installed,
+and `src/{{ project_slug }}/main.py` starts as a stub. Pick one and `uv
+add` it yourself:
+
+- **FastAPI:** `uv add fastapi uvicorn[standard]`.
+- **Flask:** `uv add flask`.
+- **Dash (Plotly):** `uv add dash` (bundles Flask + Plotly.js + the React
+  wrapper). Two Dash-specific conventions worth knowing: `assets/`
+  replaces `static/` — it's a Dash-enforced folder name that gets
+  auto-served and hot-reloaded, not just naming convention; and Dash apps
+  are usually callback-driven rather than REST-routed, so `pages/`
+  (`dash.register_page`, Dash's multi-page app support) may replace
+  `api/routes/` entirely unless you also add your own Flask routes via
+  `app.server.route(...)`.
+
+Once you've picked one:
+
+- **`pytest-asyncio`** (only needed for FastAPI + async routes you want to
+  test directly, i.e. `async def test_...`): `uv add --group dev
+  pytest-asyncio`, then add `asyncio_mode = "auto"` under
+  `[tool.pytest.ini_options]` in `pyproject.toml`.
+- **`alembic`** (only if using SQLAlchemy for migrations, any framework):
+  `uv add sqlalchemy alembic`, then `alembic init migrations`.
+- **`dash[testing]`** (only for Dash, only if you want its browser-based
+  Selenium-driven integration tests — heavier than the default
+  `tests/unit`/`tests/integration` split, so treat it as opt-in): `uv add
+  --group dev dash[testing]`.
+- **justfile:** add a `serve` recipe, e.g. `uv run --frozen uvicorn
+  {{ project_slug }}.main:app --reload`, `uv run --frozen flask --app
+  {{ project_slug }}.main run --debug`, or `uv run --frozen python -m
+  {{ project_slug }}.main` for Dash's own dev server.
+- **prek:** no adjustments needed — ruff/mypy/complexipy/pytest hooks are
+  already framework-agnostic.
+
+## Git hooks
+
+```
+just install-hooks    # one-time: installs prek's git hook shims (see prek.toml)
+```
+
+Runs formatting, type checks, and complexity checks automatically before
+each commit, plus commit message / branch-name conventions (commitizen),
+generic file hygiene, spell checking, and secret scanning. Install this
+once per clone.
+
+## Dev commands
+
+```
+just format           # ruff check --fix + ruff format
+just check-format     # ruff format --check (non-mutating)
+just check-types      # mypy
+just check-complexity # complexipy
+just check-spelling      # codespell
+just check-secrets       # gitleaks, staged changes only — run before committing
+just check-versions-sync # gitleaks pin in prek.toml vs. installed binary
+just test                # pytest + coverage
+just check               # format + types + complexity + spelling + version-sync + test bundle
+```
+
+`check-secrets` is deliberately not part of the `just check` bundle — it
+only makes sense once something's staged. Run it (or rely on the
+`install-hooks` git hook) before every commit.
+
+`codespell`, like `ruff`/`mypy`/`complexipy`, is a venv dependency — its
+pre-commit hook just runs `just check-spelling`, so there's a single pin
+(`pyproject.toml`) and nothing to drift. `gitleaks` is a standalone binary
+outside the venv, pinned separately in `prek.toml` and the README install
+snippet above; `just check-versions-sync` (also wired in as a prek hook)
+checks the installed binary against that pin so the two can't silently
+drift apart.

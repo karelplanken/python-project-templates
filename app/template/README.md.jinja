@@ -1,0 +1,80 @@
+# {{ project_name }}
+
+{{ project_description }}
+
+## Setup
+
+```
+just install
+```
+
+`codespell` and `prek` install via `just install`. `gitleaks` is a
+standalone binary, install separately, pinned to match `prek.toml`:
+
+```bash
+GITLEAKS_VERSION={{ gitleaks_version }}
+curl -sSL -o gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+tar xzf gitleaks.tar.gz gitleaks
+sudo mv gitleaks /usr/local/bin/
+rm gitleaks.tar.gz
+gitleaks version
+```
+
+If you use VS Code, install the Python extension alongside the Ruff extension — otherwise Ruff-in-editor can silently fall back to a PATH/bundled binary instead of the `uv.lock`-pinned one in your venv.
+
+## Toolkit
+
+This template is toolkit-agnostic — no CLI/GUI dependency is pre-installed,
+and `src/{{ project_slug }}/__main__.py` starts as a stub. Pick one and
+`uv add` it yourself:
+
+- **CLI:** `uv add typer` (recommended over Click — type-hint-driven,
+  matches this template's `mypy --strict` setup, and gives you `--help`/
+  completion generation for free). Wire your `app` object up in
+  `__main__.py`, subcommands in `commands/` (thin, delegates to `core/`
+  for actual logic).
+- **GUI:** `tkinter` needs no install (stdlib) — for anything else,
+  `uv add pygame`, `uv add pyside6`, etc. as needed. Build your mainloop
+  in `__main__.py`; `commands/` doesn't apply here, delete it and keep
+  testable logic in `core/`.
+
+`[project.scripts]` in `pyproject.toml` already points `{{ project_slug }}`
+at `{{ project_slug }}.__main__:main` — nothing to change there once you've
+picked a toolkit.
+
+## Git hooks
+
+```
+just install-hooks    # one-time: installs prek's git hook shims (see prek.toml)
+```
+
+Runs formatting, type checks, and complexity checks automatically before
+each commit, plus commit message / branch-name conventions (commitizen),
+generic file hygiene, spell checking, and secret scanning. Install this
+once per clone.
+
+## Dev commands
+
+```
+just format           # ruff check --fix + ruff format
+just check-format     # ruff format --check (non-mutating)
+just check-types      # mypy
+just check-complexity # complexipy
+just check-spelling      # codespell
+just check-secrets       # gitleaks, staged changes only — run before committing
+just check-versions-sync # gitleaks pin in prek.toml vs. installed binary
+just test                # pytest + coverage
+just check               # format + types + complexity + spelling + version-sync + test bundle
+```
+
+`check-secrets` is deliberately not part of the `just check` bundle — it
+only makes sense once something's staged. Run it (or rely on the
+`install-hooks` git hook) before every commit.
+
+`codespell`, like `ruff`/`mypy`/`complexipy`, is a venv dependency — its
+pre-commit hook just runs `just check-spelling`, so there's a single pin
+(`pyproject.toml`) and nothing to drift. `gitleaks` is a standalone binary
+outside the venv, pinned separately in `prek.toml` and the README install
+snippet above; `just check-versions-sync` (also wired in as a prek hook)
+checks the installed binary against that pin so the two can't silently
+drift apart.

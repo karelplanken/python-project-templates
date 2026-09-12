@@ -1,0 +1,96 @@
+# {{ project_name }}
+
+{{ project_description }}
+
+## Layout
+
+`data/raw/` is immutable and gitignored — treat it read-only, never edit it
+in place. `data/interim/` and `data/processed/` are also gitignored;
+regenerate both from `data/raw/` via `src/{{ project_slug }}/`, don't hand-edit
+or commit them. `notebooks/` stays exploratory; anything worth reusing gets
+promoted into `src/{{ project_slug }}/` as a tested function. `reports/figures/`
+holds the actual deliverables — those aren't gitignored.
+
+## Notebooks
+
+- Ruff lints and formats `.ipynb` natively — `just format`/`just
+  check-ruff`/`just check-format` already cover `notebooks/`, no extra
+  tooling needed.
+- `mypy`/`complexipy`/`pytest` don't touch notebooks — `mypy` is told to
+  skip `notebooks/`/`data/`/`reports/` explicitly (`[tool.mypy] exclude`
+  in `pyproject.toml`); `complexipy`/`pytest` never look at non-`.py`
+  content anyway. Deliberate, not an oversight: notebooks stay
+  exploratory, code worth type-checking/testing belongs in `src/`.
+- `just clean-notebooks` strips cell outputs/execution counts (also wired
+  in as a prek hook, runs automatically pre-commit) — keeps diffs to
+  actual code changes and stops `codespell` choking on base64 image blobs.
+- Runtime: **{{ notebook_runtime }}**, chosen at generation time.
+  - `ipykernel`: use VS Code's Jupyter extension, pick this project's
+    `.venv` as the kernel — no separate kernel registration needed.
+  - `jupyterlab`: `just lab` launches JupyterLab with Ruff wired in as a
+    live LSP (lint/format-on-save in the browser editor) via the
+    project-local `jupyter_server_config.json` — picked up automatically
+    since JupyterLab reads it from the working directory. Live in-browser
+    `mypy` is deliberately not wired in (would need a second LSP server,
+    `pylsp` + `pylsp-mypy`, for feedback that arguably shouldn't apply to
+    throwaway exploration cells anyway) — run `just check-types` instead.
+  - `both`/`none`: as above, or bring your own.
+
+## Setup
+
+```
+just install
+```
+
+`codespell` and `prek` install via `just install`. `gitleaks` is a
+standalone binary, install separately, pinned to match `prek.toml`:
+
+```bash
+GITLEAKS_VERSION={{ gitleaks_version }}
+curl -sSL -o gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+tar xzf gitleaks.tar.gz gitleaks
+sudo mv gitleaks /usr/local/bin/
+rm gitleaks.tar.gz
+gitleaks version
+```
+
+If you use VS Code, install the Python extension alongside the Ruff extension — otherwise Ruff-in-editor can silently fall back to a PATH/bundled binary instead of the `uv.lock`-pinned one in your venv.
+
+## Git hooks
+
+```
+just install-hooks    # one-time: installs prek's git hook shims (see prek.toml)
+```
+
+Runs formatting, type checks, and complexity checks automatically before
+each commit, plus commit message / branch-name conventions (commitizen),
+generic file hygiene, spell checking, and secret scanning. Install this
+once per clone.
+
+## Dev commands
+
+```
+just format           # ruff check --fix + ruff format (covers notebooks/ too)
+just check-format     # ruff format --check (non-mutating)
+just check-types      # mypy (notebooks/data/reports excluded, see pyproject.toml)
+just check-complexity # complexipy
+just check-spelling      # codespell
+just check-secrets       # gitleaks, staged changes only — run before committing
+just check-versions-sync # gitleaks pin in prek.toml vs. installed binary
+just clean-notebooks     # strip notebook outputs/execution counts
+just lab                 # launch JupyterLab (ruff wired in as LSP)
+just test                # pytest + coverage
+just check               # format + types + complexity + spelling + version-sync + test bundle
+```
+
+`check-secrets` is deliberately not part of the `just check` bundle — it
+only makes sense once something's staged. Run it (or rely on the
+`install-hooks` git hook) before every commit.
+
+`codespell`, like `ruff`/`mypy`/`complexipy`, is a venv dependency — its
+pre-commit hook just runs `just check-spelling`, so there's a single pin
+(`pyproject.toml`) and nothing to drift. `gitleaks` is a standalone binary
+outside the venv, pinned separately in `prek.toml` and the README install
+snippet above; `just check-versions-sync` (also wired in as a prek hook)
+checks the installed binary against that pin so the two can't silently
+drift apart.
