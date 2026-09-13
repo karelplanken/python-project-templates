@@ -8,6 +8,11 @@ project_slug:
   type: str
   help: "Project slug (snake_case) — used as pyproject.toml's [project] name; this shape has no importable package"
   default: "{{ project_name.lower().replace('-', '_').replace(' ', '_') }}"
+  validator: >-
+    {% if not (project_slug.isidentifier() and project_slug == project_slug.lower()) %}
+    project_slug must be a valid, all-lowercase Python identifier (letters,
+    digits, underscores; can't start with a digit).
+    {% endif %}
 
 project_description:
   type: str
@@ -18,6 +23,10 @@ python_version:
   type: str
   help: "Python version, major.minor only (e.g. 3.14) — check with `uv python list --managed-python --no-python-downloads`"
   default: "3.14"
+  validator: >-
+    {% if not (python_version.count('.') == 1 and python_version.replace('.', '').isdigit()) %}
+    python_version must be MAJOR.MINOR using digits only (e.g. 3.14).
+    {% endif %}
 
 author_name:
   type: str
@@ -29,6 +38,13 @@ gitleaks_version:
   type: str
   help: "gitleaks version — pins both the prek hook rev and the README install snippet"
   default: "8.30.1"
+  validator: >-
+    {% set segments = gitleaks_version.split('.') %}
+    {% set ns = namespace(ok=true) %}
+    {% for segment in segments %}{% if not segment.isdigit() %}{% set ns.ok = false %}{% endif %}{% endfor %}
+    {% if not ns.ok %}
+    gitleaks_version must be digits separated by dots (e.g. 8.30.1).
+    {% endif %}
 
 license_year:
   type: str
