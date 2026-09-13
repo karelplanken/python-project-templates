@@ -26,6 +26,11 @@ project_description:
   help: One-line description
   default: ""
 
+project_keywords:
+  type: str
+  help: "Comma-separated keywords for pyproject.toml's [project] keywords (optional)"
+  default: ""
+
 python_version:
   type: str
   help: "Python version, major.minor only (e.g. 3.14) — check with `uv python list --managed-python --no-python-downloads`"
