@@ -36,9 +36,6 @@ python_version:
 author_name:
   type: str
 
-author_email:
-  type: str
-
 gitleaks_version:
   type: str
   help: "gitleaks version — pins both the prek hook rev and the README install snippet"
