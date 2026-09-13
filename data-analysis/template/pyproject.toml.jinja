@@ -5,7 +5,7 @@ version = "0.1.0"
 description = {{ project_description | tojson }}
 requires-python = ">={{ python_version }}"
 readme = "README.md"
-authors = [{ name = {{ author_name | tojson }}, email = {{ author_email | tojson }} }]
+authors = [{ name = {{ author_name | tojson }} }]
 keywords = {{ project_keywords.split(',') | map('trim') | reject('equalto', '') | list | tojson }}
 dependencies = []
 
