@@ -2,10 +2,10 @@
 [project]
 name = "{{ project_slug }}"
 version = "0.1.0"
-description = "{{ project_description }}"
+description = {{ project_description | tojson }}
 requires-python = ">={{ python_version }}"
 readme = "README.md"
-authors = [{ name = "{{ author_name }}", email = "{{ author_email }}" }]
+authors = [{ name = {{ author_name | tojson }}, email = {{ author_email | tojson }} }]
 dependencies = []
 
 # Dev dependencies --------------------------------------------------------------------
