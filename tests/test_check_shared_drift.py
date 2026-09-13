@@ -1,7 +1,5 @@
 """Tests for check_shared_drift.py's parsers and drift comparators."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 import check_shared_drift as csd

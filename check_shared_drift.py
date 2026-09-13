@@ -17,8 +17,6 @@ disagrees — that's the actual "someone changed one copy and forgot the
 others" failure mode this guards against.
 """
 
-from __future__ import annotations
-
 import re
 import sys
 from pathlib import Path
