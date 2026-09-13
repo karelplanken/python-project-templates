@@ -2,7 +2,7 @@ _subdirectory: template
 
 project_name:
   type: str
-  help: Human-readable project name (e.g. "Excel Validators")
+  help: Human-readable project name
 
 project_slug:
   type: str
