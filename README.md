@@ -88,6 +88,7 @@ copyright year — then generate the project. From there:
 ```bash
 cd my-new-lib
 just install         # uv sync — pulls in ruff, mypy, complexipy, codespell, pytest, prek
+git init              # optional — install-hooks runs it if this isn't a repo yet
 just install-hooks    # one-time: wires up prek's git hooks
 just check            # format + types + complexity + spelling + version-sync + tests
 ```
