@@ -14,7 +14,9 @@ upgrade:
 # Git hooks -----------------------------------------------------------------------------
 
 # Install prek's git hook shims (reads hook types from prek.toml).
+# Initializes a git repo first if this project isn't inside one yet.
 install-hooks:
+    git rev-parse --is-inside-work-tree >/dev/null 2>&1 || git init
     uv run --frozen prek install
 
 # Code quality ------------------------------------------------------------------------
