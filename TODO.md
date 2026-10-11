@@ -1,11 +1,5 @@
 # TODO
 
-- **Single root copier template, so `copier update` works.** One
-  `copier.yml` at the repo root with a "what kind of project" question that
-  selects the shape's `template/` dir, plus tagged releases. Full plan and
-  acceptance criteria: [plans/root-copier-template.md](plans/root-copier-template.md).
-  Do this before the betterleaks migration below.
-
 - **Migrate gitleaks → betterleaks, prek-only (after betterleaks v2.0.0
   stable).** Gitleaks is security-patch only; its author moved to
   [betterleaks](https://github.com/betterleaks/betterleaks). Covers the root
