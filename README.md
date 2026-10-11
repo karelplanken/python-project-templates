@@ -99,6 +99,11 @@ Each generated project's own `README.md` documents its specific dev
 commands, git hook behavior, and (for `app/`/`web-app/`/`scripts/`) the
 toolkit/framework choices left for you to make after generation.
 
+Once the project has a GitHub repo, protect its `main` branch so changes
+only land through squash-merged pull requests — see
+[`github-protect-main-ruleset.md`](github-protect-main-ruleset.md) for the
+ruleset, the related repo settings, and a `gh` script that applies both.
+
 ## Updating a project
 
 Generated projects record the template version they came from (`_commit`)
