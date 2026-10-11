@@ -115,8 +115,9 @@ my-app/
 - **Framework-agnostic by design (2026-08-23):** FastAPI and Flask differ
   enough in app-factory pattern, routing, and test client that picking one
   via a copier question would mean the same kind of heavy per-branch
-  conditionals rejected at the repo level (independent per-shape templates
-  instead of one root selector) — and splitting into two full templates
+  conditionals rejected at the repo level (independent per-shape templates;
+  the root `copier.yml` only selects which one renders, it never branches
+  inside a shape) — and splitting into two full templates
   (`fastapi/`, `flask/`) would duplicate all the shared tooling
   (justfile, prek.toml, ruff/mypy config) for what's really just a few
   lines of `main.py`/routes difference. So: no framework dependency is
