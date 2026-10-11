@@ -17,10 +17,11 @@ Inspired by (and started from) Nacho Lorca's
 
 ## Shapes
 
-Each shape is an independent Copier template in its own subdirectory —
-there's no single root template with a "what kind of project?" prompt,
-because the shapes genuinely diverge in structure (some aren't even
-src-layout). Pick the one that matches what you're building:
+Each shape is an independent template in its own `<shape>/template/`
+subdirectory, because the shapes genuinely diverge in structure (some aren't
+even src-layout). A single root `copier.yml` asks "what kind of project?"
+first and renders only the chosen shape's directory — it never branches
+inside a shape. Pick the one that matches what you're building:
 
 | Shape | Directory | For |
 |---|---|---|
@@ -73,17 +74,18 @@ Install these once, system-wide, before using any template:
 ## Using a template
 
 ```bash
-copier copy gh:karelplanken/python-project-templates/library ./my-new-lib --trust
+copier copy --trust gh:karelplanken/python-project-templates ./my-new-lib
 ```
 
-Swap `library` for any shape directory from the table above. `--trust` is
+The first prompt lists every shape from the table above. `--trust` is
 required — the templates use Jinja features (like the `to_nice_yaml`
 filter for the answers file) that Copier treats as needing explicit trust,
 which is fine for a template you wrote yourself.
 
-Copier will prompt for `project_name`, `project_slug`, a description, your
-Python version, author name/email, the `gitleaks` version to pin, and a
-copyright year — then generate the project. From there:
+Copier will then prompt for `project_name`, `project_slug`, a description,
+optional keywords, your Python version, author name, the `gitleaks` version
+to pin, and a copyright year (plus a notebook runtime for `data-analysis`) —
+then generate the project. From there:
 
 ```bash
 cd my-new-lib
@@ -96,6 +98,23 @@ just check            # format + types + complexity + spelling + version-sync + 
 Each generated project's own `README.md` documents its specific dev
 commands, git hook behavior, and (for `app/`/`web-app/`/`scripts/`) the
 toolkit/framework choices left for you to make after generation.
+
+## Updating a project
+
+Generated projects record the template version they came from (`_commit`)
+and every answer, including the shape, in `.copier-answers.yml`. To pull in
+later template changes, from a clean git working tree in the project:
+
+```bash
+copier update --trust --skip-answered
+```
+
+Copier merges the template's changes since that version into the project,
+keeping your own edits; conflicts show up as regular merge conflicts to
+resolve before committing. `--skip-answered` reuses the recorded answers
+instead of asking every question again; drop it to change one. Projects
+generated before the root template existed (2026-10) have no `_commit` and
+can't be updated this way.
 
 ## Shared tooling
 

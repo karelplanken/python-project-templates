@@ -203,3 +203,15 @@ def test_checks_skip_the_reference_shape_itself(tmp_path: Path) -> None:
 def test_main_reports_no_drift_against_the_real_repo() -> None:
     """The real shapes in this repo currently show no drift against library/."""
     assert csd.main() == 0
+
+
+def test_find_shapes_finds_every_shape_in_the_real_repo() -> None:
+    """Every `<shape>/template/` dir is found, with no per-shape copier.yml."""
+    assert [p.name for p in csd.find_shapes()] == [
+        'app',
+        'data-analysis',
+        'library',
+        'multi-subpackage',
+        'scripts',
+        'web-app',
+    ]

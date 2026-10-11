@@ -51,11 +51,7 @@ def find_shapes() -> list[Path]:
     Returns:
         Each shape's root directory, sorted by name.
     """
-    return sorted(
-        p.parent
-        for p in REPO_ROOT.glob('*/copier.yml')
-        if (p.parent / 'template').is_dir()
-    )
+    return sorted(p.parent for p in REPO_ROOT.glob('*/template') if p.is_dir())
 
 
 def parse_justfile_recipes(text: str) -> dict[str, list[str]]:

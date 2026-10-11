@@ -1,13 +1,33 @@
-_subdirectory: template
+# One root template so generated projects record `_commit` and can take
+# template changes with `copier update`. Each shape still renders from its own
+# independent `<shape>/template/` dir — the shape answer only picks which one.
+_subdirectory: "{{ project_shape }}/template"
 
-# tests/.gitkeep exists only so this repo's own git tracks the otherwise-empty
-# tests/ dir — not something a generated project should see (real test files
-# show up there almost immediately). The data/ and reports/figures/ .gitkeep
-# files are different: those dirs are meant to stay empty/gitignored in the
-# *generated* project too (see .gitignore), so their .gitkeep ships for real
-# — it's the only thing that lets those empty dirs survive a clone.
+# .gitkeep files exist only so this repo's own git tracks otherwise-empty
+# dirs — not something a generated project should see. None of these paths
+# ships in any shape, so one list covers all of them. data-analysis's data/
+# and reports/figures/ .gitkeep files are deliberately absent: those dirs stay
+# empty/gitignored in the *generated* project too (see its .gitignore), so
+# their .gitkeep ships for real — it's the only thing that lets them survive
+# a clone.
 _exclude:
   - "tests/.gitkeep"
+  - "tests/unit/.gitkeep"
+  - "tests/integration/.gitkeep"
+  - "tests/example_unit/.gitkeep"
+  - "static/.gitkeep"
+
+project_shape:
+  type: str
+  help: "What kind of project? (details: Shapes table in the template README)"
+  # Labels kept short enough not to wrap in an 80-column terminal.
+  choices:
+    "library — importable package (PyPI or used by other projects)": library
+    "app — CLI or GUI application": app
+    "web-app — running server: FastAPI, Flask or Dash": web-app
+    "data-analysis — notebooks, data/, reports/, plus a src/ package": data-analysis
+    "multi-subpackage — independent units in one package/lockfile": multi-subpackage
+    "scripts — standalone scripts sharing a shared/ module": scripts
 
 project_name:
   type: str
@@ -15,7 +35,12 @@ project_name:
 
 project_slug:
   type: str
-  help: Import / package name (snake_case)
+  help: >-
+    {% if project_shape == 'scripts' -%}
+    Project slug (snake_case) — used as pyproject.toml's [project] name; this shape has no importable package
+    {%- else -%}
+    Import / package name (snake_case)
+    {%- endif %}
   default: "{{ project_name.lower().replace('-', '_').replace(' ', '_') }}"
   validator: >-
     {% if not (project_slug.isidentifier() and project_slug == project_slug.lower()) %}
@@ -71,3 +96,4 @@ notebook_runtime:
     - both
     - none
   default: ipykernel
+  when: "{{ project_shape == 'data-analysis' }}"
