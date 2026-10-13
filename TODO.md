@@ -18,6 +18,18 @@
     review the `git diff`.
   - fcc-coding-challenges isn't copier-generated (no answers file). It
     needs a full answers file written by hand, or it stays manual.
+  - Add this entry to the template pyproject.toml:
+    ```toml
+    # fail_under is a starting point, not a mandate — adjust per project.
+    # Each challenge file ends with an `if __name__ == '__main__':` debugging block
+    # that the tests never run; exclude it so it doesn't count against coverage.
+    # (Dots in the pattern are regex wildcards, matching either quote style.)
+    [tool.coverage.report]
+    fail_under = 70
+    exclude_also = [
+        'if __name__ == .__main__.:',
+    ]
+    ```
 
 - **Migrate gitleaks → betterleaks, prek-only (after betterleaks v2.0.0
   stable).** Gitleaks is security-patch only; its author moved to
