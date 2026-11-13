@@ -1,8 +1,11 @@
 """Tests for check_shared_drift.py's parsers and drift comparators."""
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import check_shared_drift as csd
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # parse_justfile_recipes -----------------------------------------------------
 
