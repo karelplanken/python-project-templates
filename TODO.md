@@ -7,7 +7,7 @@
   Try one project first (e.g. pourbaix), on its own branch:
   - In `.copier-answers.yml`, set `_src_path:
     gh:karelplanken/python-project-templates` (pourbaix has an absolute
-    path to `app/`; analyze-pptx, marimo-exporation and simple-odmr have
+    path to `app/`; analyze-pptx and simple-odmr have
     the relative `python-project-templates/scripts/`), add `_commit: v1.0.0`
     and add `project_shape` (`app` for pourbaix, `scripts` for the other
     three).
