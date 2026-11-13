@@ -42,7 +42,7 @@ HOOK_BLOCK_RE = re.compile(
 )
 HOOK_ID_RE = re.compile(r'id\s*=\s*"([^"]+)"')
 HOOK_ENTRY_RE = re.compile(r'entry\s*=\s*"([^"]+)"')
-SECTION_RE = re.compile(r'^\[[\w.]+\]\s*$', re.MULTILINE)
+SECTION_RE = re.compile(r'^\[[\w.-]+\]\s*$', re.MULTILINE)
 
 
 def find_shapes() -> list[Path]:

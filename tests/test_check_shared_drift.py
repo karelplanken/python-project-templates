@@ -102,6 +102,23 @@ def test_parse_toml_sections_strips_trailing_comment_before_next_header() -> Non
     assert sections['[tool.mypy]'] == '[tool.mypy]\nstrict = true'
 
 
+def test_parse_toml_sections_ends_section_at_hyphenated_header() -> None:
+    """A header with a hyphen (per-file-ignores) still starts a new section.
+
+    Regression test: without `-` in the header pattern, a shape-specific
+    [tool.ruff.lint.per-file-ignores] was read as part of [tool.ruff.lint].
+    """
+    text = (
+        '[tool.ruff.lint]\n'
+        'select = ["ALL"]\n'
+        '\n'
+        '[tool.ruff.lint.per-file-ignores]\n'
+        '"tests/**" = ["S101"]\n'
+    )
+    sections = csd.parse_toml_sections(text, ['[tool.ruff.lint]'])
+    assert sections['[tool.ruff.lint]'] == '[tool.ruff.lint]\nselect = ["ALL"]'
+
+
 def test_parse_toml_sections_ignores_unrequested_sections() -> None:
     """A section not in `names` is left out of the result entirely."""
     text = '[tool.a]\nx = 1\n\n[tool.b]\ny = 2\n'
