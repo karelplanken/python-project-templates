@@ -1,8 +1,11 @@
 """Tests for check_shared_drift.py's parsers and drift comparators."""
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import check_shared_drift as csd
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # parse_justfile_recipes -----------------------------------------------------
 
@@ -100,6 +103,23 @@ def test_parse_toml_sections_strips_trailing_comment_before_next_header() -> Non
         sections['[tool.ruff.format]'] == '[tool.ruff.format]\nquote-style = "single"'
     )
     assert sections['[tool.mypy]'] == '[tool.mypy]\nstrict = true'
+
+
+def test_parse_toml_sections_ends_section_at_hyphenated_header() -> None:
+    """A header with a hyphen (per-file-ignores) still starts a new section.
+
+    Regression test: without `-` in the header pattern, a shape-specific
+    [tool.ruff.lint.per-file-ignores] was read as part of [tool.ruff.lint].
+    """
+    text = (
+        '[tool.ruff.lint]\n'
+        'select = ["ALL"]\n'
+        '\n'
+        '[tool.ruff.lint.per-file-ignores]\n'
+        '"tests/**" = ["S101"]\n'
+    )
+    sections = csd.parse_toml_sections(text, ['[tool.ruff.lint]'])
+    assert sections['[tool.ruff.lint]'] == '[tool.ruff.lint]\nselect = ["ALL"]'
 
 
 def test_parse_toml_sections_ignores_unrequested_sections() -> None:
