@@ -49,5 +49,8 @@
   Release; compare them before choosing. Decide separately for this repo
   (only git tags carry the version, since there's no package) and for the
   generated projects (version in `pyproject.toml`, maybe a PyPI release).
+  Current idea: Python Semantic Release in the templates, made optional
+  through a copier question so each project opts in at generation (or
+  later via `copier update` without `--skip-answered`).
   This was decided against once before, for a reason nobody recorded —
   write the reason down this time, whichever way it goes.
