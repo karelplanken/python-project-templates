@@ -40,10 +40,14 @@
     (pourbaix, analyze-pptx, marimo-exporation, simple-odmr,
     fcc-coding-challenges). Then uninstall `/usr/local/bin/gitleaks`.
 
-- **Explore commitizen's `cz bump`.** Automatic semantic-version bumping
-  and changelog generation from Conventional Commit history
-  (`feat:`/`fix:`/`BREAKING CHANGE:` → version bump). This is separate
-  from the commit-msg *linting* (`commitizen` prek hook, enforcing
-  Conventional Commits format) already wired into every generated
-  project's `prek.toml` — `cz bump` itself hasn't been explored or
-  adopted anywhere in this repo or the templates it generates.
+- **Choose an automatic versioning tool.** Derive the SemVer bump,
+  changelog and tag from Conventional Commit history
+  (`feat:`/`fix:`/`BREAKING CHANGE:` → version bump) instead of picking
+  the version by hand (see "Releasing a template change" in README.md).
+  Candidates: commitizen's `cz bump` (the `commitizen` prek hook already
+  lints commit messages in every generated project) and Python Semantic
+  Release; compare them before choosing. Decide separately for this repo
+  (only git tags carry the version, since there's no package) and for the
+  generated projects (version in `pyproject.toml`, maybe a PyPI release).
+  This was decided against once before, for a reason nobody recorded —
+  write the reason down this time, whichever way it goes.
