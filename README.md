@@ -110,11 +110,45 @@ copier update --trust --skip-answered
 ```
 
 Copier merges the template's changes since that version into the project,
-keeping your own edits; conflicts show up as regular merge conflicts to
-resolve before committing. `--skip-answered` reuses the recorded answers
-instead of asking every question again; drop it to change one. Projects
-generated before the root template existed (2026-10) have no `_commit` and
-can't be updated this way.
+keeping your own edits. `--skip-answered` reuses the recorded answers
+instead of asking every question again; drop it to change one. Copier
+updates to the newest tag and commits nothing, so `git restore .` undoes
+an update you don't want.
+
+Then review what it did:
+
+```bash
+git diff        # _commit bumped + exactly the template's changes
+just check      # new template rules may flag existing code
+```
+
+- **The diff should be small:** `_commit` in `.copier-answers.yml` plus the
+  template change you released. Anything else is worth a closer look.
+- **Conflicts** show up as `<<<<<<<` / `>>>>>>>` markers in the file (or as
+  `.rej` files) where your edits overlap the template's. Resolve them before
+  committing.
+- **"Make sure Git >= 2.24 is installed"** is harmless with any recent Git:
+  copier tries a `git diff` flag that newer Git rejects, then falls back.
+
+Commit the update on its own, so it stays separate from any code fixes it
+makes necessary: `chore: update to template vX.Y.Z`, with a body saying
+what the release brought in when that isn't obvious from the version.
+
+### Linking an older project
+
+Projects generated before the root template existed (2026-10) have no
+`_commit`, so `copier update` doesn't know where they started. Link one
+by editing its `.copier-answers.yml`:
+
+```yaml
+_src_path: gh:karelplanken/python-project-templates
+_commit: v1.0.0
+project_shape: app   # the shape it was generated from
+```
+
+Commit that, then run `copier update` as above. Copier now treats the
+project as generated from `v1.0.0`, so any difference between `v1.0.0` and
+the template it really came from counts as your own edit and is kept.
 
 ## Shared tooling
 
@@ -150,6 +184,47 @@ shape's shared recipes/hooks/config blocks against `library/`, the
 reference shape, tolerating shape-specific additions (like
 `data-analysis`'s extra `clean-notebooks` recipe) but flagging anything
 `library` has that another shape is missing or disagrees with.
+
+### Releasing a template change
+
+Projects only see a change once it's tagged: `copier update` moves to the
+newest tag, not to `main`.
+
+1. **Branch from `main`** and make the change in every shape it applies to
+   (usually all six), plus this repo's own `pyproject.toml` for ruff/mypy
+   settings.
+2. **Check it:** `just check-shared-drift`, `uv run pytest`, and render
+   each shape you touched:
+
+   ```bash
+   copier copy --trust --defaults --vcs-ref HEAD \
+       -d project_shape=app -d project_name="Demo" -d author_name=X \
+       . /tmp/demo-app
+   ```
+
+   `--vcs-ref HEAD` renders the branch including uncommitted edits; without
+   it copier uses the newest tag and you'd test the old template. Run the
+   project's tools in the result (e.g. `ruff check`).
+3. **PR, squash-merge, tag.** Tags are annotated, on the squash commit:
+
+   ```bash
+   git fetch origin main:main
+   git tag -a vX.Y.Z -m "vX.Y.Z: <what changed>" main
+   git push origin vX.Y.Z
+   ```
+
+4. **Update a project** to try it out (see [Updating a
+   project](#updating-a-project)).
+
+Pick the version by what updating costs a project, not by how big the
+template change is:
+
+- **Major:** projects need work after updating, e.g. new lint rules that
+  flag existing code (`v2.0.0`: ruff `select = ["ALL"]`), a dropped Python
+  version, a removed recipe. Mark the commit with `!` and a
+  `BREAKING CHANGE:` footer.
+- **Minor:** something new that existing projects pass as-is.
+- **Patch:** a fix (`v2.0.1`: the answers file's trailing blank line).
 
 ## License
 
