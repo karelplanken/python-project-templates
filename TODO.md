@@ -1,24 +1,35 @@
 # TODO
 
-- **Link existing projects to the template, so `copier update` works for
-  them.** Projects generated before v1.0.0 have no `_commit` in
-  `.copier-answers.yml`. Do this before the betterleaks migration below, so
-  that migration can reach them with `copier update` instead of by hand.
-  Try one project first (e.g. pourbaix), on its own branch:
-  - In `.copier-answers.yml`, set `_src_path:
-    gh:karelplanken/python-project-templates` (pourbaix has an absolute
-    path to `app/`; analyze-pptx and simple-odmr have
-    the relative `python-project-templates/scripts/`), add `_commit: v1.0.0`
-    and add `project_shape` (`app` for pourbaix, `scripts` for the other
-    three).
-  - Copier then treats the project as generated from v1.0.0, so any
-    difference between v1.0.0 and the template state it was really
-    generated from counts as the project's own edit and is kept. Check with
-    `copier update --trust --skip-answered` against a later tag and
-    review the `git diff`.
-  - fcc-coding-challenges isn't copier-generated (no answers file). It
-    needs a full answers file written by hand, or it stays manual.
-  - Add this entry to the template pyproject.toml:
+- **Bring every project in `~/python-projects/` onto a template.** The
+  goal: all projects are based on one of the shapes and take template
+  changes with `copier update`. Do this before the betterleaks migration
+  below, so that migration can reach them with `copier update` instead of
+  by hand. How to link and update is in README.md ("Linking an older
+  project", "Updating a project"). Expect repair work in each project after
+  the first update: since `v2.0.0` ruff selects `ALL`. Commit the update
+  and the fixes separately.
+
+  State as of 2026-11-15 (from scanning for `.copier-answers.yml`):
+  - **Linked and updated:** pourbaix (`app`, `v2.0.1`). Its ruff fixes
+    continue in pourbaix's own `HANDOFF.md`.
+  - **Answers file, not linked yet:** analyze-pptx and simple-odmr.
+    Relative `_src_path: python-project-templates/scripts/`, no `_commit`
+    and no `project_shape`. Set `_src_path:
+    gh:karelplanken/python-project-templates`, `_commit: v1.0.0` and
+    `project_shape: scripts`.
+  - **Linked, but to the local folder:** snippets and var-py
+    (`_commit: v1.0.0`, shape `scripts`, relative `_src_path` to this
+    repo on disk). Switch `_src_path` to the `gh:` URL like the others,
+    then update.
+  - **No answers file:** algos, beginners-data-workshop, canvas-publisher,
+    cegc-dshbrd, fcc-coding-challenges, fcc-dcc-tool, grade-pipeline,
+    ollama-python-lab, oop-irv-kalb, practical-data-analysis-python,
+    real-python (no `pyproject.toml` either), sqla-cc. For each, decide:
+    which shape fits, then migrate with `copier copy` as pourbaix was
+    (or write an answers file by hand and link it), or leave it alone
+    (e.g. course material or archived work).
+  - **fcc-coding-challenges only** (not the template): when it's migrated,
+    add this to its own `pyproject.toml`:
     ```toml
     # fail_under is a starting point, not a mandate — adjust per project.
     # Each challenge file ends with an `if __name__ == '__main__':` debugging block
@@ -48,9 +59,9 @@
     ship a known-good `rev` that's updated with `prek autoupdate`; make sure
     it doesn't pick an rc tag.
   - Release it as a new tag, then bring existing projects along: with
-    `copier update` for those linked as above, by hand for the rest
-    (pourbaix, analyze-pptx, marimo-exporation, simple-odmr,
-    fcc-coding-challenges). Then uninstall `/usr/local/bin/gitleaks`.
+    `copier update` for those linked by then, by hand for the rest. The
+    first entry's inventory says which is which. Then uninstall
+    `/usr/local/bin/gitleaks`.
 
 - **Choose an automatic versioning tool.** Derive the SemVer bump,
   changelog and tag from Conventional Commit history
@@ -66,3 +77,21 @@
   later via `copier update` without `--skip-answered`).
   This was decided against once before, for a reason nobody recorded —
   write the reason down this time, whichever way it goes.
+
+- **Consider a MicroPython template, probably separate from this repo.**
+  Every MicroPython project needs the same setup to get type checking and
+  editor completion for code that runs on a board: the board's stubs as a
+  dev dependency, plus type-checker settings that use them instead of
+  CPython's standard library. A template would set that up once.
+  - **Leaning towards a separate template** rather than a seventh shape
+    here: the parts that differ (stubs, deploying with e.g. `mpremote`,
+    no `pytest`/coverage on the board, no package to build) touch most of
+    the justfile and `pyproject.toml`, and the drift check would then flag
+    them as drift against `library/`.
+  - **Still shared, so decide what to copy:** ruff and formatting, type
+    checking (with stubs), prek, codespell, secret scanning and commit-msg
+    linting all work the same. Logic that doesn't touch hardware can still
+    be tested with `pytest` on CPython.
+  - **To work out first:** which stubs packages and boards to support (a
+    copier question per board?). The MicroPython projects aren't in
+    `~/python-projects/`, so look at them first.
