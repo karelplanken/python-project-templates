@@ -1,5 +1,60 @@
 # TODO
 
+- **Bug: `check-types` hook lacks `pass_filenames = false` (ship with
+  the `default` recipe below as `v2.1.0`).** prek passes the changed
+  files to the hook, so `just check-types` runs `mypy tests/test_x.py`
+  instead of `mypy .`. mypy then can't resolve the project package from
+  `src/` and fails with `Skipping analyzing '<pkg>.__main__': module is
+  installed, but missing library stubs or py.typed marker
+  [import-untyped]`. Any generated project hits this on its first commit
+  or push that touches `tests/`. Found in pourbaix on 2026-11-15, already
+  fixed there in its own commit.
+  - **Fix:** add `pass_filenames = false` to the hook, keeping
+    `types = ["python"]`, so mypy always checks the whole project. That's
+    also more correct: a change in one file can break types in another.
+  - **Where:** the hook is in the root `prek.toml` and in all six shapes'
+    `template/prek.toml.jinja`, not only `app` and `library`.
+  - **Only `check-types` needs it.** What matters is whether a tool has
+    to see other files to check one. mypy follows imports, so it does.
+    `format` (ruff), `check-complexity` (complexipy) and `check-spelling`
+    (codespell) check each file on its own, so passing file names is
+    better: it's faster and only reports on what's being committed. For
+    `format`, `pass_filenames = false` would make things worse: it would
+    rewrite untouched files across the project and leave them as unstaged
+    edits. Leave those three as they are.
+  - Release together with the `default` recipe below as minor `v2.1.0`
+    (see "Releasing a template change" in README.md), then
+    `copier update` pourbaix. Its local fix should merge
+    without changes.
+
+- **Add a `default` recipe that lists the recipes (ship with the
+  `check-types` fix as `v2.1.0`).** In all seven justfiles (root and the
+  six shapes) the first recipe is `install`, so a bare `just` runs
+  `uv sync`. Most people expect a bare `just` to show the recipe list.
+  Make this the first recipe:
+  ```just
+  # Show which justfile is in use and list its recipes.
+  default:
+      @echo "Using {{ justfile() }}"
+      @just --list
+  ```
+  - The first line prints the justfile's full path. That's the safeguard
+    against running a parent project's recipes from a folder without its
+    own justfile.
+  - Optional: put `[private]` above `default:` to leave `default` out of
+    its own list. A bare `just` still runs it, since it's the first
+    recipe.
+  - The recipe must be the same in every shape, or
+    `check_shared_drift.py` flags it (it compares recipe bodies against
+    `library/`).
+  - The shapes ship a plain `justfile`, not `justfile.jinja`, so Jinja
+    leaves `{{ }}` alone. If a justfile ever becomes `.jinja`, wrap the
+    recipe in `{% raw %}…{% endraw %}`.
+  - Not needed: `[confirm]` (no recipe deletes anything) and `[no-cd]`
+    (recipes are meant to run from the project root). Note that attribute
+    text isn't filled in: `[confirm("… {{ justfile_directory() }}?")]`
+    prints the braces literally (tested with just 1.59.0).
+
 - **Bring every project in `~/python-projects/` onto a template.** The
   goal: all projects are based on one of the shapes and take template
   changes with `copier update`. Do this before the betterleaks migration
