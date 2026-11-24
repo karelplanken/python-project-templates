@@ -12,7 +12,10 @@ templates. Checked on 2026-11-24 with ruff 0.16.5, mypy 2.3.1, prek
   `pre-push`. Only hooks with an explicit `stages = [...]` are limited, so
   a push can fail on the same checks as a commit. Since `v2.1.0` the
   templates limit the hooks that edit files to `pre-commit`; the checks
-  still run on `pre-push` too.
+  still run on `pre-push` too. Since `v2.2.0` each fixer that has a
+  check mode also has a pre-push twin that only checks: `check-ruff`
+  and `check-format` for `ruff-format`, `check-notebooks` for
+  `clean-notebooks`.
 - **Hooks that fix files change them even when they fail.** For example
   `ruff check --fix` (in `just format`), `pretty-format-json --autofix`
   and `end-of-file-fixer`. After a rejected commit, check `git status` and
@@ -67,6 +70,16 @@ templates. Checked on 2026-11-24 with ruff 0.16.5, mypy 2.3.1, prek
   real types instead of `Any`.
 - **`untyped_calls_exclude = ["pymatgen"]`** allows untyped calls into one
   library without turning the check off everywhere.
+
+## Notebooks
+
+- **nbstripout skips directories without a word.** `nbstripout
+  notebooks/` exits 0 and strips nothing; it only acts on files (checked
+  with 0.9.2). Expand directories first, e.g. `find notebooks/ -name
+  '*.ipynb' -exec nbstripout {} +`. Run with no file at all, it waits for
+  a notebook on stdin.
+- **`nbstripout --verify`** changes nothing and exits 1 when it would
+  strip something: the check-mode counterpart for a pre-push hook.
 
 ## pytest and mock
 

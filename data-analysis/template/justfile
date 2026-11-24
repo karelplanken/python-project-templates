@@ -27,6 +27,18 @@ install-hooks:
     git rev-parse --is-inside-work-tree >/dev/null 2>&1 || git init
     uv run --frozen prek install
 
+# Template ------------------------------------------------------------------------------
+
+# Show which template version this project was generated from or last updated to.
+template-version:
+    @if [ ! -f .copier-answers.yml ]; then \
+        echo "template version: none (no .copier-answers.yml)"; \
+    else \
+        awk '/^_commit:/ {print "template version: " $2; found = 1} \
+            END {if (!found) print "template version: unknown (no _commit in .copier-answers.yml)"}' \
+            .copier-answers.yml; \
+    fi
+
 # Code quality ------------------------------------------------------------------------
 format *paths=".":
     uv run --frozen ruff check --fix {{ paths }}
@@ -88,8 +100,15 @@ test target="":
 # Notebooks -----------------------------------------------------------------------------
 
 # Strips notebook outputs/execution counts (prek runs this before commit).
+# nbstripout skips directories, so find expands them into notebooks.
 clean-notebooks *paths="notebooks/":
-    uv run --frozen nbstripout {{ paths }}
+    find {{ paths }} -name '*.ipynb' -not -path '*/.ipynb_checkpoints/*' \
+        -exec uv run --frozen nbstripout {} +
+
+# Non-mutating — fails if `just clean-notebooks` would strip something.
+check-notebooks *paths="notebooks/":
+    find {{ paths }} -name '*.ipynb' -not -path '*/.ipynb_checkpoints/*' \
+        -exec uv run --frozen nbstripout --verify {} +
 
 # Launches JupyterLab with Ruff wired in as the LSP (see jupyter_server_config.json).
 lab:

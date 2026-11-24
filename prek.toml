@@ -48,6 +48,25 @@ language = "system"
 types = ["python"]
 stages = ["pre-commit"]
 
+# Pre-push twins of ruff-format, which fixes on pre-commit only: the same
+# lint and format checks, without fixing, as a safety net after
+# `git commit --no-verify`.
+[[repos.hooks]]
+id = "check-ruff"
+name = "check-ruff"
+entry = "just check-ruff"
+language = "system"
+types = ["python"]
+stages = ["pre-push"]
+
+[[repos.hooks]]
+id = "check-format"
+name = "check-format"
+entry = "just check-format"
+language = "system"
+types = ["python"]
+stages = ["pre-push"]
+
 # Static type checking via mypy
 [[repos.hooks]]
 id = "check-types"

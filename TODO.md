@@ -1,22 +1,5 @@
 # TODO
 
-- **Quote file names in the justfile recipes.** `format`, `check-ruff`,
-  `check-types` and the other `*paths` recipes put `{{ paths }}` into the
-  shell unquoted, so a file name with a space or `(` that prek passes in
-  breaks the command. Nothing in the templates hits it since `v2.1.0`
-  (the JupyterLab config lost its Jinja file name), but a project file
-  can. Try `[positional-arguments]` with `"$@"`. It's in all seven
-  justfiles, and the drift check compares recipe bodies.
-
-- **Check on pre-push what the fixing hooks fix on pre-commit.** Since
-  `v2.1.0` the fixing hooks run on `pre-commit` only, so after a
-  `git commit --no-verify` nothing checks formatting or notebook outputs
-  before a push. Add checking twins that run only on `pre-push`:
-  `just check-format` (exists already) for `ruff-format`, and a new
-  `check-notebooks` recipe with `nbstripout --verify` (non-zero exit when
-  it would strip, changes nothing) for `clean-notebooks`. Whitespace and
-  line-ending fixers have no check mode; decide whether they need one.
-
 - **Bring every project in `~/python-projects/` onto a template.** The
   goal: all projects are based on one of the shapes and take template
   changes with `copier update`. Do this before the betterleaks migration
