@@ -16,7 +16,8 @@ hooks = [
   { id = "check-added-large-files" },
   { id = "check-toml" },
   { id = "check-yaml" },
-  { id = "pretty-format-json", args = ["--autofix", "--indent=4", "--no-ensure-ascii"], stages = ["pre-commit"] },
+  # Notebooks are JSON too, but Jupyter writes them with 1-space indents.
+  { id = "pretty-format-json", args = ["--autofix", "--indent=4", "--no-ensure-ascii"], stages = ["pre-commit"], exclude = "\\.ipynb$" },
 ]
 
 # Commit message / branch conventions -----------------------------------------
