@@ -1,14 +1,17 @@
 # TODO
 
-- **Bug: `check-types` hook lacks `pass_filenames = false` (ship with
-  the `default` recipe below as `v2.1.0`).** prek passes the changed
-  files to the hook, so `just check-types` runs `mypy tests/test_x.py`
-  instead of `mypy .`. mypy then can't resolve the project package from
-  `src/` and fails with `Skipping analyzing '<pkg>.__main__': module is
-  installed, but missing library stubs or py.typed marker
-  [import-untyped]`. Any generated project hits this on its first commit
-  or push that touches `tests/`. Found in pourbaix on 2026-11-15, already
-  fixed there in its own commit.
+The first four entries form the next release, `v2.1.0`; the fifth (a
+docs file) can go on the same branch. Do them on one branch, then
+release and `copier update` pourbaix.
+
+- **Bug: `check-types` hook lacks `pass_filenames = false` (`v2.1.0`).**
+  prek passes the changed files to the hook, so `just check-types` runs
+  `mypy tests/test_x.py` instead of `mypy .`. mypy then can't resolve the
+  project package from `src/` and fails with `Skipping analyzing
+  '<pkg>.__main__': module is installed, but missing library stubs or
+  py.typed marker [import-untyped]`. Any generated project hits this on
+  its first commit or push that touches `tests/`. Found in pourbaix on
+  2026-11-15, already fixed there in its own commit.
   - **Fix:** add `pass_filenames = false` to the hook, keeping
     `types = ["python"]`, so mypy always checks the whole project. That's
     also more correct: a change in one file can break types in another.
@@ -22,16 +25,13 @@
     `format`, `pass_filenames = false` would make things worse: it would
     rewrite untouched files across the project and leave them as unstaged
     edits. Leave those three as they are.
-  - Release together with the `default` recipe below as minor `v2.1.0`
-    (see "Releasing a template change" in README.md), then
-    `copier update` pourbaix. Its local fix should merge
-    without changes.
+  - pourbaix already has this fix locally, so its `copier update` to
+    `v2.1.0` should merge it without changes.
 
-- **Add a `default` recipe that lists the recipes (ship with the
-  `check-types` fix as `v2.1.0`).** In all seven justfiles (root and the
-  six shapes) the first recipe is `install`, so a bare `just` runs
-  `uv sync`. Most people expect a bare `just` to show the recipe list.
-  Make this the first recipe:
+- **Add a `default` recipe that lists the recipes (`v2.1.0`).** In all
+  seven justfiles (root and the six shapes) the first recipe is
+  `install`, so a bare `just` runs `uv sync`. Most people expect a bare
+  `just` to show the recipe list. Make this the first recipe:
   ```just
   # Show which justfile is in use and list its recipes.
   default:
@@ -54,6 +54,50 @@
     (recipes are meant to run from the project root). Note that attribute
     text isn't filled in: `[confirm("… {{ justfile_directory() }}?")]`
     prints the braces literally (tested with just 1.59.0).
+
+- **Bug: the `uv_build` pin is out of date (`v2.1.0`).** Five shapes
+  (all but `scripts`, which has no build backend) pin
+  `uv_build>=0.11.28,<0.12.0`, while the local uv is 0.13.9. `uv build`
+  only uses the backend built into uv when uv's version is inside that
+  range. Otherwise it downloads an old `uv_build` from PyPI, which is
+  slower and misses backend fixes. uv never raises the bound for you.
+  - **Fix:** set `requires = ["uv_build>=0.13.9,<0.14"]` in each shape's
+    `pyproject.toml.jinja`. The 0.12 and 0.13 release notes list no
+    breaking changes to the backend config.
+  - **Guard:** add a test in `tests/` that reads the pinned range from the
+    shapes and fails when the local `uv --version` is above the upper
+    bound (and that all five shapes pin the same range). Then the next
+    uv minor release shows up as a failing test, not as a silent slow
+    build.
+  - Decided against (2026-11-24): a Jinja extension that reads
+    `uv --version` during `copier copy`. It needs `--trust` on every
+    copy and update plus the `copier-templates-extensions` plugin, and
+    Copier stores the answer, so later updates keep the old value anyway.
+    Projects get the new pin through `copier update`, like any template
+    change.
+
+- **Run fixing hooks on `pre-commit` only (`v2.1.0`).** The shapes
+  install `pre-commit`, `commit-msg` and `pre-push` hooks, and every hook
+  without `stages` runs at all of them. So the hooks that edit files run
+  again during a push, and an edit made then is left as an uncommitted
+  change after the push is rejected.
+  - **Fix:** add `stages = ["pre-commit"]` to the fixing hooks:
+    `trailing-whitespace`, `end-of-file-fixer`, `mixed-line-ending`
+    (`--fix=lf`), `pretty-format-json` (`--autofix`) and `ruff-format`.
+    The checks (mypy, complexity, spelling, gitleaks, the `check-*`
+    hooks from pre-commit-hooks) keep running on `pre-push` too, as a
+    second safety net after a `git commit --no-verify`.
+  - In the root `prek.toml` and all six shapes' `prek.toml.jinja`.
+
+- **Commit the tooling gotchas as `docs/tooling-gotchas.md`.** General
+  know-how from moving pourbaix onto the `app` shape (prek, ruff, mypy,
+  Pylance, pytest and mock, git and GitHub, uv). It's in
+  `.collected-todos/python-tooling-gotchas.md`, which
+  `.git/info/exclude` keeps out of git. Before committing, check each
+  claim; in particular whether ruff really has a
+  `# ruff: ignore[print]` comment form. Link it from README.md. No
+  release needed (it's not part of any shape), but it can go on the
+  `v2.1.0` branch.
 
 - **Bring every project in `~/python-projects/` onto a template.** The
   goal: all projects are based on one of the shapes and take template
@@ -98,7 +142,10 @@
     ```
 
 - **Migrate gitleaks → betterleaks, prek-only (after betterleaks v2.0.0
-  stable).** Gitleaks is security-patch only; its author moved to
+  stable).** Still waiting: `v2.0.0-rc.11` came out on 2026-11-24. Start
+  from a fresh branch off `main` (the old `feat/migrate-to-betterleaks`
+  branch only held TODO commits and was renamed). Gitleaks is
+  security-patch only; its author moved to
   [betterleaks](https://github.com/betterleaks/betterleaks). Covers the root
   config, all six shapes and `tests/test_check_shared_drift.py`:
   - Let prek's `language: golang` hook build the pinned `rev`, and stop
