@@ -48,6 +48,25 @@ language = "system"
 types = ["python"]
 stages = ["pre-commit"]
 
+# Pre-push twins of ruff-format, which fixes on pre-commit only: the same
+# lint and format checks, without fixing, as a safety net after
+# `git commit --no-verify`.
+[[repos.hooks]]
+id = "check-ruff"
+name = "check-ruff"
+entry = "just check-ruff"
+language = "system"
+types = ["python"]
+stages = ["pre-push"]
+
+[[repos.hooks]]
+id = "check-format"
+name = "check-format"
+entry = "just check-format"
+language = "system"
+types = ["python"]
+stages = ["pre-push"]
+
 # Static type checking via mypy
 [[repos.hooks]]
 id = "check-types"
@@ -84,6 +103,15 @@ entry = "just clean-notebooks"
 language = "system"
 types = ["jupyter"]
 stages = ["pre-commit"]
+
+# Pre-push twin of clean-notebooks: fails if a notebook still has outputs.
+[[repos.hooks]]
+id = "check-notebooks"
+name = "check-notebooks"
+entry = "just check-notebooks"
+language = "system"
+types = ["jupyter"]
+stages = ["pre-push"]
 
 # Catches drift between this file's gitleaks pin and what's actually
 # installed (gitleaks isn't a venv dependency, so this is its only check).
