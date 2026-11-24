@@ -9,8 +9,11 @@ templates. Checked on 2026-11-24 with ruff 0.16.5, mypy 2.3.1, prek
 ## prek hooks
 
 - **Hooks without `stages` run at every installed hook type,** including
-  `pre-push`. Only hooks with an explicit `stages = [...]` are limited, so
-  a push can fail on the same checks as a commit. Since `v2.1.0` the
+  `pre-push` and `commit-msg`. Only hooks with an explicit `stages = [...]`
+  are limited, so a push can fail on the same checks as a commit, and
+  each commit runs the checks twice (pre-commit and commit-msg). A
+  top-level `default_stages` sets the stages for every hook without its
+  own; since `v2.2.1` the templates use `["pre-commit", "pre-push"]`. Since `v2.1.0` the
   templates limit the hooks that edit files to `pre-commit`; the checks
   still run on `pre-push` too. Since `v2.2.0` each fixer that has a
   check mode also has a pre-push twin that only checks: `check-ruff`

@@ -1,4 +1,7 @@
 default_install_hook_types = ["pre-commit", "commit-msg", "pre-push"]
+# Hooks without their own `stages` run on these only. Without this they
+# would also run at commit-msg, so every commit ran the checks twice.
+default_stages = ["pre-commit", "pre-push"]
 
 # Generic file hygiene --------------------------------------------------------
 # Hooks that edit files run on pre-commit only: run again on pre-push, an
