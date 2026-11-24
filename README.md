@@ -102,7 +102,8 @@ toolkit/framework choices left for you to make after generation.
 ## Updating a project
 
 Generated projects record the template version they came from (`_commit`)
-and every answer, including the shape, in `.copier-answers.yml`. To pull in
+and every answer, including the shape, in `.copier-answers.yml`.
+`just template-version` prints that version (since `v2.2.0`). To pull in
 later template changes, from a clean git working tree in the project:
 
 ```bash
