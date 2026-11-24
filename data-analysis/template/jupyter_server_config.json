@@ -1,0 +1,20 @@
+{
+    "LanguageServerManager": {
+        "language_servers": {
+            "ruff": {
+                "argv": [
+                    "ruff",
+                    "server"
+                ],
+                "display_name": "Ruff",
+                "languages": [
+                    "python"
+                ],
+                "mime_types": [
+                    "text/x-python"
+                ],
+                "version": 2
+            }
+        }
+    }
+}
