@@ -173,6 +173,10 @@ outside the venv, pinned separately in `prek.toml` and each README's
 install snippet, which is why it's the only tool `check-versions-sync`
 actually checks.
 
+Known pitfalls with this stack (prek hook stages, ruff under `ALL`, mypy
+and Pylance, mocks, git renames, the `uv_build` pin) are collected in
+[docs/tooling-gotchas.md](docs/tooling-gotchas.md).
+
 ## Maintaining this repo
 
 The per-shape templates duplicate their shared tooling files (`justfile`,
