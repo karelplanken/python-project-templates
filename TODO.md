@@ -1,15 +1,5 @@
 # TODO
 
-- **Finish the `v2.1.0` release.** Everything is on
-  `feat/just-default-and-hook-fixes`; tests and the drift check pass,
-  `prek run --all-files` is clean, and all six shapes render. Left to do:
-  push, open the PR
-  (`feat: list recipes on a bare just, fix hook stages and uv_build pin`),
-  squash-merge, then tag `main` as in README.md ("Releasing a template
-  change"): `git tag -a v2.1.0 -m "v2.1.0: ..." main`. Minor, not patch:
-  bare `just` now lists recipes instead of running `uv sync`. Once
-  tagged, `.collected-todos/` holds nothing that isn't done; delete it.
-
 - **Quote file names in the justfile recipes.** `format`, `check-ruff`,
   `check-types` and the other `*paths` recipes put `{{ paths }}` into the
   shell unquoted, so a file name with a space or `(` that prek passes in
@@ -37,8 +27,8 @@
   and the fixes separately.
 
   State as of 2026-11-15 (from scanning for `.copier-answers.yml`):
-  - **Linked and updated:** pourbaix (`app`, `v2.0.1`). Its ruff fixes
-    continue in pourbaix's own `HANDOFF.md`.
+  - **Linked and updated:** pourbaix (`app`, `v2.1.0` since
+    2026-11-24). Its own open work is in pourbaix's `BACKLOG.md`.
   - **Answers file, not linked yet:** analyze-pptx and simple-odmr.
     Relative `_src_path: python-project-templates/scripts/`, no `_commit`
     and no `project_shape`. Set `_src_path:
