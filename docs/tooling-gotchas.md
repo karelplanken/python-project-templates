@@ -55,10 +55,12 @@ templates. Checked on 2026-11-24 with ruff 0.16.5, mypy 2.3.1, prek
 
 ## mypy and Pylance
 
-- **When `pyproject.toml` has a `[tool.pyright]` section, Pylance ignores**
-  `python.analysis.typeCheckingMode` and the severity overrides in the VS
-  Code settings. Set `typeCheckingMode = "strict"` in `pyproject.toml`
-  itself.
+- **A `[tool.pyright]` section in `pyproject.toml` (or a
+  `pyrightconfig.json`) can override `python.analysis.typeCheckingMode`**
+  from the VS Code settings, so the editor may not follow it. Set
+  `typeCheckingMode = "strict"` in `pyproject.toml` itself. The Pylance
+  docs don't say whether `diagnosticSeverityOverrides` is overridden too,
+  or whether an empty section is enough to trigger this.
 - **Third-party packages without type information (no `py.typed`):**
   prefer `[[tool.mypy.overrides]]` with `module = ["pkg.*"]` and
   `follow_untyped_imports = true` over `ignore_missing_imports`. You keep
