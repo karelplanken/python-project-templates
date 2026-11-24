@@ -1,5 +1,22 @@
 # TODO
 
+- **Stop the checks running twice per commit (`v2.2.1`).** Hooks
+  without `stages` run at every installed hook type, and `commit-msg` is
+  one of them. So every commit runs the checks twice: at `pre-commit`
+  and again at `commit-msg` (seen 2026-11-24, once this repo had its
+  hooks installed). That's `no-commit-to-branch`, `check-merge-conflict`,
+  `check-added-large-files`, `check-toml`, `check-yaml`, `gitleaks`,
+  `check-types`, `check-complexity`, `check-spelling` and
+  `check-versions-sync`.
+  - **Fix:** `stages = ["pre-commit", "pre-push"]` on each, in the root
+    `prek.toml` and all six shapes. That keeps the pre-push safety net and
+    leaves `commit-msg` to `commitizen` alone.
+  - Alternative: prek's top-level `default_stages = ["pre-commit",
+    "pre-push"]`, if prek supports it like pre-commit does. It's one line
+    instead of ten, but hooks with their own `stages` still override it.
+    Check the prek docs first.
+  - Patch release: nothing changes in what gets checked, only how often.
+
 - **Bring every project in `~/python-projects/` onto a template.** The
   goal: all projects are based on one of the shapes and take template
   changes with `copier update`. Do this before the betterleaks migration
