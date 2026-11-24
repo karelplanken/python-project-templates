@@ -1,29 +1,31 @@
 # TODO
 
-- **Finish the `v2.1.0` release.** All five changes are on
+- **Finish the `v2.1.0` release.** Everything is on
   `feat/just-default-and-hook-fixes`; tests and the drift check pass,
-  and all six shapes render. Left to do: push, open the PR
+  `prek run --all-files` is clean, and all six shapes render. Left to do:
+  push, open the PR
   (`feat: list recipes on a bare just, fix hook stages and uv_build pin`),
   squash-merge, then tag `main` as in README.md ("Releasing a template
   change"): `git tag -a v2.1.0 -m "v2.1.0: ..." main`. Minor, not patch:
   bare `just` now lists recipes instead of running `uv sync`. Once
   tagged, `.collected-todos/` holds nothing that isn't done; delete it.
 
-- **Fix what `prek run --all-files` finds in this repo.** Found
-  2026-11-24, not part of `v2.1.0`:
-  - `check-spelling` fails: `just check-spelling` puts `{{ paths }}`
-    unquoted into a shell command, and
-    `data-analysis/template/{% if notebook_runtime in (...) %}...jinja`
-    contains `(`, so `sh` reports a syntax error. Quote the paths in the
-    recipes (e.g. `[positional-arguments]` with `"$@"`), or exclude the
-    template dirs from the root hook. All shapes share the recipe, so a
-    project with such a file name hits it too.
-  - The fixers would edit untouched files: trailing spaces in the stock
-    `.gitignore` comments (root and all six shapes), no final newline in
-    the six shape justfiles, and `pretty-format-json` reindenting
-    `data-analysis/template/notebooks/01-explore.ipynb` to 4 spaces
-    (exclude `*.ipynb` from that hook instead; Jupyter writes 1-space
-    indents back).
+- **Quote file names in the justfile recipes.** `format`, `check-ruff`,
+  `check-types` and the other `*paths` recipes put `{{ paths }}` into the
+  shell unquoted, so a file name with a space or `(` that prek passes in
+  breaks the command. Nothing in the templates hits it since `v2.1.0`
+  (the JupyterLab config lost its Jinja file name), but a project file
+  can. Try `[positional-arguments]` with `"$@"`. It's in all seven
+  justfiles, and the drift check compares recipe bodies.
+
+- **Check on pre-push what the fixing hooks fix on pre-commit.** Since
+  `v2.1.0` the fixing hooks run on `pre-commit` only, so after a
+  `git commit --no-verify` nothing checks formatting or notebook outputs
+  before a push. Add checking twins that run only on `pre-push`:
+  `just check-format` (exists already) for `ruff-format`, and a new
+  `check-notebooks` recipe with `nbstripout --verify` (non-zero exit when
+  it would strip, changes nothing) for `clean-notebooks`. Whitespace and
+  line-ending fixers have no check mode; decide whether they need one.
 
 - **Bring every project in `~/python-projects/` onto a template.** The
   goal: all projects are based on one of the shapes and take template
