@@ -1,19 +1,22 @@
 default_install_hook_types = ["pre-commit", "commit-msg", "pre-push"]
 
 # Generic file hygiene --------------------------------------------------------
+# Hooks that edit files run on pre-commit only: run again on pre-push, an
+# edit would be left as an uncommitted change after the push is rejected.
+# The checks run on pre-push too, as a safety net after `--no-verify`.
 [[repos]]
 repo = "https://github.com/pre-commit/pre-commit-hooks"
 rev = "v6.0.0"
 hooks = [
   { id = "no-commit-to-branch" },
-  { id = "trailing-whitespace" },
-  { id = "end-of-file-fixer" },
-  { id = "mixed-line-ending", args = ["--fix=lf"] },
+  { id = "trailing-whitespace", stages = ["pre-commit"] },
+  { id = "end-of-file-fixer", stages = ["pre-commit"] },
+  { id = "mixed-line-ending", args = ["--fix=lf"], stages = ["pre-commit"] },
   { id = "check-merge-conflict" },
   { id = "check-added-large-files" },
   { id = "check-toml" },
   { id = "check-yaml" },
-  { id = "pretty-format-json", args = ["--autofix", "--indent=4", "--no-ensure-ascii"] },
+  { id = "pretty-format-json", args = ["--autofix", "--indent=4", "--no-ensure-ascii"], stages = ["pre-commit"] },
 ]
 
 # Commit message / branch conventions -----------------------------------------
@@ -42,6 +45,7 @@ name = "ruff-format"
 entry = "just format"
 language = "system"
 types = ["python"]
+stages = ["pre-commit"]
 
 # Static type checking via mypy
 [[repos.hooks]]
@@ -78,6 +82,7 @@ name = "clean-notebooks"
 entry = "just clean-notebooks"
 language = "system"
 types = ["jupyter"]
+stages = ["pre-commit"]
 
 # Catches drift between this file's gitleaks pin and what's actually
 # installed (gitleaks isn't a venv dependency, so this is its only check).
