@@ -50,6 +50,9 @@ name = "check-types"
 entry = "just check-types"
 language = "system"
 types = ["python"]
+# mypy follows imports, so it checks the whole project, not just the
+# files prek passes (a change in one file can break types in another).
+pass_filenames = false
 
 # Cyclomatic complexity via complexipy
 [[repos.hooks]]
