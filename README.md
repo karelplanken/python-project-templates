@@ -218,7 +218,21 @@ newest tag, not to `main`.
    git push origin vX.Y.Z
    ```
 
-4. **Update a project** to try it out (see [Updating a
+4. **Create the GitHub Release** for the tag, so the Releases page works
+   as a changelog and "Latest" points at it. Copier only reads tags, so
+   this is for people, not for `copier update`. Notes: what changed and
+   why, how to update, and the PR (`**Full changes:** #N`):
+
+   ```bash
+   gh release create vX.Y.Z --verify-tag \
+       --title "$(git tag -l --format='%(subject)' vX.Y.Z)" \
+       --notes-file notes.md
+   ```
+
+   `--verify-tag` stops it from creating a new tag when the name is
+   mistyped. The title repeats the tag message.
+
+5. **Update a project** to try it out (see [Updating a
    project](#updating-a-project)).
 
 Pick the version by what updating costs a project, not by how big the
