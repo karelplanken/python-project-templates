@@ -100,8 +100,10 @@ test target="":
 # Notebooks -----------------------------------------------------------------------------
 
 # Strips notebook outputs/execution counts (prek runs this before commit).
+# nbstripout skips directories, so find expands them into notebooks.
 clean-notebooks *paths="notebooks/":
-    uv run --frozen nbstripout {{ paths }}
+    find {{ paths }} -name '*.ipynb' -not -path '*/.ipynb_checkpoints/*' \
+        -exec uv run --frozen nbstripout {} +
 
 # Launches JupyterLab with Ruff wired in as the LSP (see jupyter_server_config.json).
 lab:
