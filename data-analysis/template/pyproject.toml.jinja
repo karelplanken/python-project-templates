@@ -22,14 +22,26 @@ dev = [
     "pytest-cov",
     "ruff",
     "mypy",
-{% if notebook_runtime in ("ipykernel", "both") %}
+]
+{%- if notebook_runtime != "none" %}
+
+# Notebook runtime ({{ notebook_runtime }}), chosen at generation time. A group of
+# its own, so the checks above install without JupyterLab (e.g. in CI);
+# default-groups keeps a plain `uv sync`/`uv run` installing it.
+notebook = [
+    {%- if notebook_runtime in ("ipykernel", "both") %}
     "ipykernel",
-{% endif %}
-{% if notebook_runtime in ("jupyterlab", "both") %}
+    {%- endif %}
+    {%- if notebook_runtime in ("jupyterlab", "both") %}
     "jupyterlab",
     "jupyterlab-lsp",
-{% endif %}
+    {%- endif %}
 ]
+
+# uv refuses a default group that doesn't exist, so this stays inside the if.
+[tool.uv]
+default-groups = ["dev", "notebook"]
+{%- endif %}
 
 # Build backend -----------------------------------------------------------------------
 [build-system]

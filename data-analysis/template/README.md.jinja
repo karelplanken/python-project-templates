@@ -25,16 +25,31 @@ holds the actual deliverables — those aren't gitignored.
   in as a prek hook, runs automatically pre-commit) — keeps diffs to
   actual code changes and stops `codespell` choking on base64 image blobs.
 - Runtime: **{{ notebook_runtime }}**, chosen at generation time.
-  - `ipykernel`: use VS Code's Jupyter extension, pick this project's
-    `.venv` as the kernel — no separate kernel registration needed.
-  - `jupyterlab`: `just lab` launches JupyterLab with Ruff wired in as a
-    live LSP (lint/format-on-save in the browser editor) via the
-    project-local `jupyter_server_config.json` — picked up automatically
-    since JupyterLab reads it from the working directory. Live in-browser
+{%- if notebook_runtime != "none" %} Its
+  packages live in the `notebook` dependency group in `pyproject.toml`,
+  separate from the `dev` tooling, and `default-groups` installs both groups on a
+  plain `uv sync`/`uv run` (`just install` installs every group anyway).
+{%- endif %}
+{%- if notebook_runtime in ("ipykernel", "both") %}
+  - VS Code: installs `ipykernel`. Use VS Code's Jupyter extension and
+    pick this project's `.venv` as the kernel; no separate kernel
+    registration needed.
+{%- endif %}
+{%- if notebook_runtime in ("jupyterlab", "both") %}
+  - JupyterLab: installs `jupyterlab` and `jupyterlab-lsp`. `just lab`
+    launches JupyterLab with Ruff wired in as a live LSP
+    (lint/format-on-save in the browser editor) via the project-local
+    `jupyter_server_config.json`, picked up automatically since
+    JupyterLab reads it from the working directory. Live in-browser
     `mypy` is deliberately not wired in (would need a second LSP server,
     `pylsp` + `pylsp-mypy`, for feedback that arguably shouldn't apply to
-    throwaway exploration cells anyway) — run `just check-types` instead.
-  - `both`/`none`: as above, or bring your own.
+    throwaway exploration cells anyway); run `just check-types` instead.
+{%- endif %}
+{%- if notebook_runtime == "none" %}
+  - No notebook packages, no `just lab` and no
+    `jupyter_server_config.json`. To run notebooks, add a kernel yourself,
+    e.g. `uv add --group notebook ipykernel`.
+{%- endif %}
 
 ## Setup
 
@@ -79,8 +94,8 @@ just check-spelling      # codespell
 just check-secrets       # gitleaks, staged changes only — run before committing
 just check-versions-sync # gitleaks pin in prek.toml vs. installed binary
 just clean-notebooks     # strip notebook outputs/execution counts
-just lab                 # launch JupyterLab (ruff wired in as LSP)
-just test                # pytest + coverage
+{% if notebook_runtime in ("jupyterlab", "both") %}just lab                 # launch JupyterLab (ruff wired in as LSP)
+{% endif %}just test                # pytest + coverage
 just check               # format + types + complexity + spelling + version-sync + test bundle
 ```
 

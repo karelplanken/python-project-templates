@@ -16,6 +16,7 @@ dependencies = []
 dev = [
     "codespell",
     "complexipy",
+    "copier",
     "prek",
     "pytest",
     "pytest-cov",
