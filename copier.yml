@@ -16,10 +16,12 @@ _exclude:
   - "tests/integration/.gitkeep"
   - "tests/example_unit/.gitkeep"
   - "static/.gitkeep"
-  # data-analysis: the JupyterLab config only ships when JupyterLab is used.
-  # A condition here rather than in the file name, which tools passing file
-  # names to a shell choked on. Renders to "" (matches nothing) otherwise.
+  # data-analysis: the JupyterLab config and the `just lab` recipe only ship
+  # when JupyterLab is used. A condition here rather than in the file name,
+  # which tools passing file names to a shell choked on. Renders to ""
+  # (matches nothing) otherwise.
   - "{% if notebook_runtime not in ('jupyterlab', 'both') %}jupyter_server_config.json{% endif %}"
+  - "{% if notebook_runtime not in ('jupyterlab', 'both') %}lab.just{% endif %}"
 
 project_shape:
   type: str
