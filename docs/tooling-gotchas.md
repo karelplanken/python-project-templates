@@ -83,6 +83,40 @@ templates. Checked on 2026-11-24 with ruff 0.16.5, mypy 2.3.1, prek
   a notebook on stdin.
 - **`nbstripout --verify`** changes nothing and exits 1 when it would
   strip something: the check-mode counterpart for a pre-push hook.
+- **On WSL2, `jupyter lab` opens Windows Explorer instead of the
+  browser** when `BROWSER=explorer.exe` (e.g. set in `~/.profile` for
+  marimo). Jupyter doesn't hand the browser the URL but a redirect file,
+  as `file:/home/...` (one slash), and `explorer.exe` can't resolve a
+  Linux path. Don't work around it with `use_redirect_file = false`:
+  that puts the token on the browser's command line, visible in process
+  lists. Instead set `BROWSER=winbrowser`, a small wrapper on `PATH`
+  (e.g. `~/.local/bin/winbrowser`) that converts `file:` URLs and plain
+  paths with `wslpath -w` before calling `explorer.exe`:
+
+  ```bash
+  #!/usr/bin/env bash
+  # Open URLs and local files in the default Windows browser from WSL.
+  set -euo pipefail
+  shopt -s extglob
+
+  for arg in "$@"; do
+      case "$arg" in
+          file:*)
+              # Jupyter passes file:/path, others file:///path: keep one slash.
+              path="${arg#file:}"
+              path="/${path##+(/)}"
+              path="$(printf '%b' "${path//%/\\x}")"  # URL-decode, %20 -> space
+              target="$(wslpath -w "$path")"
+              ;;
+          *://*) target="$arg" ;;
+          *) target="$(wslpath -w "$arg")" ;;
+      esac
+      explorer.exe "$target" || true  # exits 1 even when it succeeds
+  done
+  ```
+
+  `wslu`'s `wslview` does the same, but the project is archived and no
+  longer maintained.
 
 ## pytest and mock
 
